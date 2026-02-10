@@ -1,0 +1,6 @@
+venv/
+db.sqlite3
+client_secrets.json
+media/temp_caras/
+media/rostros_permanentes/
+__pycache__/

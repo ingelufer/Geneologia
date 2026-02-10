@@ -1,0 +1,11 @@
+pip install django 
+python.exe -m pip install --upgrade pip 
+python -m venv venv 
+venv\Scripts\activate
+git init
+pip install google-auth-oauthlib google-api-python-client
+pip install opencv-python 
+pip install numpy 
+python -m pip install Pillow
+
+python manage.py check  
