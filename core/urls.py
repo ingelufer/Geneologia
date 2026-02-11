@@ -27,6 +27,8 @@ from gestion_recuerdos.views import (
     detectar_rostro_prueba,
     configurar_entorno_drive,
     guardar_rostro,
+    home,
+    galeria_familiar
 )
 
 urlpatterns = [
@@ -38,6 +40,8 @@ urlpatterns = [
     path('analizar/<str:file_id>/', analizar_rostros_drive, name='analizar_rostros'),
     path('probar-ia/', detectar_rostro_prueba, name='probar_ia'),
     path('guardar-rostro/', guardar_rostro, name='guardar_rostro'),
+    path('home', home, name='home'),
+    path('galeria/', galeria_familiar, name='galeria'),
 ]
 
 if settings.DEBUG:

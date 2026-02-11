@@ -9,3 +9,13 @@ pip install numpy
 python -m pip install Pillow
 
 python manage.py check  
+
+
+
+git
+
+git add . (Para preparar los cambios nuevos).
+
+git commit -m "Explicación breve de lo que cambiaste" (Para sellar el paquete).
+
+git push (Para mandarlo a GitHub). Ya no necesitas poner -u origin main porque Git ya se aprendió el camino.

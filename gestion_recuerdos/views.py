@@ -42,7 +42,7 @@ def google_callback(request):
         'client_secret': credentials.client_secret,
         'scopes': credentials.scopes
     }
-    return redirect('ver_fotos')
+    return redirect('home')
 
 def configurar_entorno_drive(request):
     try:
@@ -74,6 +74,29 @@ def configurar_entorno_drive(request):
         return redirect('ver_fotos')
     except Exception as e:
         return HttpResponse(f"Error al organizar: {str(e)}")
+#-------------------------------------------------------------------------------------------------
+def obtener_fotos_recursivo(service, folder_id):
+    """
+    Función de apoyo: Busca fotos y entra en subcarpetas.
+    """
+    fotos_encontradas = []
+    
+    # Buscamos tanto carpetas como imágenes dentro del ID actual
+    query = f"'{folder_id}' in parents and trashed = false"
+    results = service.files().list(
+        q=query, 
+        fields="files(id, name, mimeType)"
+    ).execute().get('files', [])
+
+    for item in results:
+        if item['mimeType'] == 'application/vnd.google-apps.folder':
+            # Si es carpeta, entramos en ella (Recursividad)
+            fotos_encontradas.extend(obtener_fotos_recursivo(service, item['id']))
+        elif 'image/' in item['mimeType']:
+            # Si es foto, la agregamos a la lista
+            fotos_encontradas.append(item)
+            
+    return fotos_encontradas
 
 def listar_fotos(request):
     creds_data = request.session.get('credentials')
@@ -81,6 +104,7 @@ def listar_fotos(request):
     creds = Credentials(**creds_data)
     service = build('drive', 'v3', credentials=creds)
 
+    # Buscamos la carpeta raíz 'Genealogia'
     query_f = "name = 'Genealogia' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     folders = service.files().list(q=query_f, fields="files(id)").execute().get('files', [])
 
@@ -88,9 +112,10 @@ def listar_fotos(request):
     if folders:
         folder_id = folders[0].get('id')
         
-        q_fotos = f"'{folder_id}' in parents and mimeType contains 'image/' and trashed = false"
-        items = service.files().list(q=q_fotos, fields="files(id, name)").execute().get('files', [])
-        html += f"<p>Carpeta detectada. {len(items)} fotos listas.</p><ul>"
+        # LLAMADA RECURSIVA: Aquí es donde sucede la magia
+        items = obtener_fotos_recursivo(service, folder_id)
+        
+        html += f"<p>Escaneo completo. {len(items)} fotos encontradas en todas las subcarpetas.</p><ul>"
         for f in items:
             url = reverse('analizar_rostros', args=[f['id']])
             html += f'<li><a href="{url}">{f["name"]}</a></li>'
@@ -98,7 +123,7 @@ def listar_fotos(request):
     else:
         html += f'<a href="{reverse("organizar_drive")}" style="background:green; color:white; padding:10px;">Organizar Drive Ahora</a>'
     return HttpResponse(html)
-
+#---------------------------------------------------------------------------------------------------
 # Importa tu modelo al principio del archivo views.py
 from .models import Familiar 
 
@@ -203,3 +228,53 @@ def guardar_rostro(request):
                     shutil.move(ruta_temp, ruta_final)
 
         return HttpResponse("<h2>¡Guardado con éxito!</h2><a href='/ver-fotos/'>Volver</a>")
+    
+def galeria_familiar(request):
+    """
+    Busca todos los rostros guardados en la base de datos 
+    y los muestra en una galería organizada por familiar.
+    """
+    # Traemos todos los rostros detectados de la BD
+    rostros = RostroDetectado.objects.all().order_by('familiar')
+    
+    html = "<h1>🖼️ Galería de Rostros Familiares</h1>"
+    html += "<div style='display:flex; flex-wrap:wrap; gap:20px; padding:20px;'>"
+    
+    for rostro in rostros:
+        # La URL de la imagen guardada en media/rostros_permanentes/
+        url_imagen = f"{settings.MEDIA_URL}{rostro.foto_recorte}"
+        
+        html += f"""
+            <div style='border:2px solid #673ab7; border-radius:15px; padding:15px; text-align:center; background:#f9f9f9; width:180px;'>
+                <img src='{url_imagen}' style='width:150px; height:150px; object-fit:cover; border-radius:10px;'>
+                <h3 style='color:#333; margin:10px 0 5px 0;'>{rostro.familiar.nombre}</h3>
+                <span style='font-size:0.8em; color:#666;'>ID Drive: {rostro.drive_file_id}</span>
+            </div>
+        """
+    
+    html += "</div>"
+    html += f"<br><a href='{reverse('home')}' style='margin:20px; display:inline-block;'>⬅️ Volver al Menú</a>"
+    
+    return HttpResponse(html)
+    
+def home(request):
+    """
+    Esta función será tu centro de control.
+    """
+    html = """
+    <h1>Sistema de Genealogía IA</h1>
+    <div style='display: flex; gap: 20px;'>
+        <a href='/ver-fotos/' style='padding:20px; background:blue; color:white; text-decoration:none; border-radius:10px;'>
+            📸 Ver Fotos de Drive
+        </a>
+        <a href='/admin/' style='padding:20px; background:orange; color:white; text-decoration:none; border-radius:10px;'>
+            ⚙️ Gestionar Base de Datos (Admin)
+        </a>
+        <a href='/galeria/' style='padding:20px; background:purple; color:white; text-decoration:none; border-radius:10px;'>
+            🖼️ Ir a la Galería Familiar
+        </a>
+    </div>
+    """
+    return HttpResponse(html)
+
+
