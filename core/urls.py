@@ -28,7 +28,8 @@ from gestion_recuerdos.views import (
     configurar_entorno_drive,
     guardar_rostro,
     home,
-    galeria_familiar
+    galeria_familiar,
+    eliminar_rostro,
 )
 
 urlpatterns = [
@@ -42,6 +43,7 @@ urlpatterns = [
     path('guardar-rostro/', guardar_rostro, name='guardar_rostro'),
     path('home', home, name='home'),
     path('galeria/', galeria_familiar, name='galeria'),
+    path('eliminar-rostro/<int:rostro_id>/', eliminar_rostro, name='eliminar_rostro'),
 ]
 
 if settings.DEBUG:

@@ -122,11 +122,14 @@ def listar_fotos(request):
         html += "</ul>"
     else:
         html += f'<a href="{reverse("organizar_drive")}" style="background:green; color:white; padding:10px;">Organizar Drive Ahora</a>'
+    html += f"<br><a href='{reverse('home')}' style='margin:20px; display:inline-block;'>⬅️ Volver al Menú</a>"
     return HttpResponse(html)
-#---------------------------------------------------------------------------------------------------
-# Importa tu modelo al principio del archivo views.py
-from .models import Familiar 
 
+
+#---------------------------------------------------------------------------------------------------
+# -----------------------------Importa tu modelo al principio del archivo views.py
+
+from .models import Familiar 
 def analizar_rostros_drive(request, file_id):
     """
     Línea por línea:
@@ -195,11 +198,13 @@ def analizar_rostros_drive(request, file_id):
 
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}")
+    
+ #-----------------------------------------------------------------------------------------------------   
 def detectar_rostro_prueba(request):
     return HttpResponse("IA operativa")
 
 @csrf_exempt # <--- Esto le dice a Django: "No pidas sello de seguridad aquí"
-
+#---------------------------------------------------------------------------------------------------------
 def guardar_rostro(request):
     if request.method == 'POST':
         # Ruta permanente según tu modelo: media/rostros_permanentes/
@@ -228,27 +233,30 @@ def guardar_rostro(request):
                     shutil.move(ruta_temp, ruta_final)
 
         return HttpResponse("<h2>¡Guardado con éxito!</h2><a href='/ver-fotos/'>Volver</a>")
-    
+#-------------------------------------------------------------------------------------------------   
 def galeria_familiar(request):
     """
     Busca todos los rostros guardados en la base de datos 
     y los muestra en una galería organizada por familiar.
     """
-    # Traemos todos los rostros detectados de la BD
     rostros = RostroDetectado.objects.all().order_by('familiar')
     
     html = "<h1>🖼️ Galería de Rostros Familiares</h1>"
     html += "<div style='display:flex; flex-wrap:wrap; gap:20px; padding:20px;'>"
     
     for rostro in rostros:
-        # La URL de la imagen guardada en media/rostros_permanentes/
         url_imagen = f"{settings.MEDIA_URL}{rostro.foto_recorte}"
+        # NUEVO: Generamos la URL para eliminar
+        url_eliminar = reverse('eliminar_rostro', args=[rostro.id])
         
+        # Aquí es donde modificamos dentro de las comillas triples:
         html += f"""
             <div style='border:2px solid #673ab7; border-radius:15px; padding:15px; text-align:center; background:#f9f9f9; width:180px;'>
                 <img src='{url_imagen}' style='width:150px; height:150px; object-fit:cover; border-radius:10px;'>
                 <h3 style='color:#333; margin:10px 0 5px 0;'>{rostro.familiar.nombre}</h3>
                 <span style='font-size:0.8em; color:#666;'>ID Drive: {rostro.drive_file_id}</span>
+                <br><br>
+                <a href='{url_eliminar}' style='color:red; text-decoration:none; font-weight:bold;'>[❌ Eliminar]</a>
             </div>
         """
     
@@ -256,6 +264,32 @@ def galeria_familiar(request):
     html += f"<br><a href='{reverse('home')}' style='margin:20px; display:inline-block;'>⬅️ Volver al Menú</a>"
     
     return HttpResponse(html)
+#------------------------------------------------------------------------------------------
+
+def eliminar_rostro(request, rostro_id):
+    """
+    Línea por línea:
+    1. Busca el registro del rostro en la BD usando su ID.
+    2. Obtiene la ruta física de la imagen en tu carpeta media.
+    3. Si el archivo existe en la carpeta, lo borra del disco duro.
+    4. Borra el registro de la base de datos.
+    5. Te redirige de vuelta a la galería.
+    """
+    import os
+    rostro = RostroDetectado.objects.get(id=rostro_id)
+    ruta_imagen = os.path.join(settings.MEDIA_ROOT, rostro.foto_recorte.name)
+
+    # Borrar archivo físico
+    if os.path.exists(ruta_imagen):
+        os.remove(ruta_imagen)
+
+    # Borrar registro en BD
+    rostro.delete()
+    
+    return redirect('galeria')
+#------------------------------------------------------------------------------------
+
+
     
 def home(request):
     """
