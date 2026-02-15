@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Genealogía IA - Menú</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f9; }
+        .menu-container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
+        .btn {
+            padding: 30px;
+            text-decoration: none;
+            color: white;
+            border-radius: 15px;
+            font-weight: bold;
+            width: 200px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn-blue { background-color: #2196F3; }
+        .btn-orange { background-color: #FF9800; }
+        .btn-purple { background-color: #9C27B0; }
+    </style>
+</head>
+<body>
+    <h1>🧬 Sistema de Genealogía IA</h1>
+    <p>Bienvenido, Luis. Selecciona una opción para comenzar:</p>
+    
+    <div class="menu-container">
+        <a href="{% url 'ver_fotos' %}" class="btn btn-blue">
+            📸 Ver Fotos de Drive
+        </a>
+        <a href="/admin/" class="btn btn-orange">
+            ⚙️ Gestionar Base de Datos
+        </a>
+        <a href="{% url 'galeria' %}" class="btn btn-purple">
+            🖼️ Ir a la Galería Familiar
+        </a>
+    </div>
+</body>
+</html>

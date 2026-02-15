@@ -18,6 +18,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2.credentials import Credentials
 
+
 # --- CONFIGURACIÓN ---
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -235,35 +236,12 @@ def guardar_rostro(request):
         return HttpResponse("<h2>¡Guardado con éxito!</h2><a href='/ver-fotos/'>Volver</a>")
 #-------------------------------------------------------------------------------------------------   
 def galeria_familiar(request):
-    """
-    Busca todos los rostros guardados en la base de datos 
-    y los muestra en una galería organizada por familiar.
-    """
     rostros = RostroDetectado.objects.all().order_by('familiar')
-    
-    html = "<h1>🖼️ Galería de Rostros Familiares</h1>"
-    html += "<div style='display:flex; flex-wrap:wrap; gap:20px; padding:20px;'>"
-    
-    for rostro in rostros:
-        url_imagen = f"{settings.MEDIA_URL}{rostro.foto_recorte}"
-        # NUEVO: Generamos la URL para eliminar
-        url_eliminar = reverse('eliminar_rostro', args=[rostro.id])
-        
-        # Aquí es donde modificamos dentro de las comillas triples:
-        html += f"""
-            <div style='border:2px solid #673ab7; border-radius:15px; padding:15px; text-align:center; background:#f9f9f9; width:180px;'>
-                <img src='{url_imagen}' style='width:150px; height:150px; object-fit:cover; border-radius:10px;'>
-                <h3 style='color:#333; margin:10px 0 5px 0;'>{rostro.familiar.nombre}</h3>
-                <span style='font-size:0.8em; color:#666;'>ID Drive: {rostro.drive_file_id}</span>
-                <br><br>
-                <a href='{url_eliminar}' style='color:red; text-decoration:none; font-weight:bold;'>[❌ Eliminar]</a>
-            </div>
-        """
-    
-    html += "</div>"
-    html += f"<br><a href='{reverse('home')}' style='margin:20px; display:inline-block;'>⬅️ Volver al Menú</a>"
-    
-    return HttpResponse(html)
+    # Añadimos 'MEDIA_URL' al diccionario para que el HTML lo reconozca
+    return render(request, 'gestion_recuerdos/galeria.html', {
+        'rostros': rostros,
+        'MEDIA_URL': settings.MEDIA_URL  # <--- Esto es la clave
+    })
 #------------------------------------------------------------------------------------------
 
 def eliminar_rostro(request, rostro_id):
@@ -289,26 +267,12 @@ def eliminar_rostro(request, rostro_id):
     return redirect('galeria')
 #------------------------------------------------------------------------------------
 
-
-    
 def home(request):
     """
-    Esta función será tu centro de control.
+    Renderiza el menú principal usando el template home.html.
     """
-    html = """
-    <h1>Sistema de Genealogía IA</h1>
-    <div style='display: flex; gap: 20px;'>
-        <a href='/ver-fotos/' style='padding:20px; background:blue; color:white; text-decoration:none; border-radius:10px;'>
-            📸 Ver Fotos de Drive
-        </a>
-        <a href='/admin/' style='padding:20px; background:orange; color:white; text-decoration:none; border-radius:10px;'>
-            ⚙️ Gestionar Base de Datos (Admin)
-        </a>
-        <a href='/galeria/' style='padding:20px; background:purple; color:white; text-decoration:none; border-radius:10px;'>
-            🖼️ Ir a la Galería Familiar
-        </a>
-    </div>
-    """
-    return HttpResponse(html)
+    return render(request, 'gestion_recuerdos/home.html')
+    
+
 
 
