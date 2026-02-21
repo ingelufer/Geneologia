@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Galería Familiar</title>
+</head>
+<body>
+    <h1>🖼️ Galería de Rostros Familiares</h1>
+    <div style="display:flex; flex-wrap:wrap; gap:20px; padding:20px;">
+        {% for rostro in rostros %}
+        <div style="border:2px solid #673ab7; border-radius:15px; padding:15px; text-align:center; background:#f9f9f9; width:180px;">
+            <img src="{{ MEDIA_URL }}{{ rostro.foto_recorte }}" style="width:150px; height:150px; object-fit:cover; border-radius:10px;">
+            <h3 style="color:#333; margin:10px 0 5px 0;">{{ rostro.familiar.nombre }}</h3>
+            <span style="font-size:0.8em; color:#666;">ID Drive: {{ rostro.drive_file_id }}</span>
+            <br><br>
+            <a href="{% url 'eliminar_rostro' rostro.id %}" style="color:red; text-decoration:none; font-weight:bold;">[❌ Eliminar]</a>
+        </div>
+        {% endfor %}
+    </div>
+    <br>
+    <a href="{% url 'home' %}" style="margin:20px; display:inline-block;">⬅️ Volver al Menú</a>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Entorno virtual y dependencias
+venv/
+
+# Base de datos (mejor que cada PC tenga la suya o esté limpia)
+db.sqlite3
+
+# Secretos y credenciales de Google (¡SEGURIDAD!)
+client_secrets.json
+credentials.json
+token.json
+
+# Archivos de medios y fotos (Privacidad)
+media/temp_caras/
+media/rostros_permanentes/
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de configuración de editor (Opcional)
+.vscode/
+.idea/

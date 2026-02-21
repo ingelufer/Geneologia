@@ -1,0 +1,52 @@
+"""
+URL configuration for core project.
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/6.0/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+
+from gestion_recuerdos.views import (
+    login_google, 
+    google_callback, 
+    listar_fotos, 
+    analizar_rostros_drive, 
+    detectar_rostro_prueba,
+    configurar_entorno_drive,
+    guardar_rostro,
+    home,
+    galeria_familiar,
+    eliminar_rostro,
+    descartar_foto,
+)
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('login-google/', login_google, name='login_google'),
+    path('google/callback/', google_callback, name='google_callback'),
+    path('ver-fotos/', listar_fotos, name='ver_fotos'),
+    path('organizar-drive/', configurar_entorno_drive, name='organizar_drive'),
+    path('analizar/<str:file_id>/', analizar_rostros_drive, name='analizar_rostros'),
+    path('probar-ia/', detectar_rostro_prueba, name='probar_ia'),
+    path('guardar-rostro/', guardar_rostro, name='guardar_rostro'),
+    path('home', home, name='home'),
+    path('galeria/', galeria_familiar, name='galeria'),
+    path('eliminar-rostro/<int:rostro_id>/', eliminar_rostro, name='eliminar_rostro'),
+    path('descartar-foto/<str:file_id>/',descartar_foto, name='descartar_foto'),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
