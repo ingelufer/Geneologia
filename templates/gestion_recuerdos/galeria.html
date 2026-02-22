@@ -1,22 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Galería Familiar</title>
+    <meta charset="UTF-8">
+    <title>Galería Genealógica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>🖼️ Galería de Rostros Familiares</h1>
-    <div style="display:flex; flex-wrap:wrap; gap:20px; padding:20px;">
-        {% for rostro in rostros %}
-        <div style="border:2px solid #673ab7; border-radius:15px; padding:15px; text-align:center; background:#f9f9f9; width:180px;">
-            <img src="{{ MEDIA_URL }}{{ rostro.foto_recorte }}" style="width:150px; height:150px; object-fit:cover; border-radius:10px;">
-            <h3 style="color:#333; margin:10px 0 5px 0;">{{ rostro.familiar.nombre }}</h3>
-            <span style="font-size:0.8em; color:#666;">ID Drive: {{ rostro.drive_file_id }}</span>
-            <br><br>
-            <a href="{% url 'eliminar_rostro' rostro.id %}" style="color:red; text-decoration:none; font-weight:bold;">[❌ Eliminar]</a>
-        </div>
+<body class="container py-4">
+
+    <h1 class="mb-4">🖼️ Galería de Rostros Familiares</h1>
+    
+    <div class="row">
+        {% for familiar in familiares %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="my-0 text-center">{{ familiar.nombre }}</h5>
+                    </div>
+                    
+                    <div class="card-body text-center">
+                        {% for rostro in familiar.rostros.all %}
+                            <div class="position-relative d-inline-block m-1">
+                                <img src="{{ rostro.foto_recorte.url }}" 
+                                     class="img-thumbnail" 
+                                     style="width: 100px; height: 100px; object-fit: cover;"
+                                     alt="Rostro de {{ familiar.nombre }}">
+                                
+                                <a href="{% url 'eliminar_rostro' rostro.id %}" 
+                                   class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                   style="padding: 0px 5px; line-height: 1;"
+                                   onclick="return confirm('¿Seguro que quieres eliminar este recorte?')">×</a>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">Sin fotos clasificadas aún.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">
+                    <h3>No hay familiares registrados aún.</h3>
+                    <p>Ve al listado de Drive para analizar fotos y asignar rostros.</p>
+                </div>
+            </div>
         {% endfor %}
     </div>
-    <br>
-    <a href="{% url 'home' %}" style="margin:20px; display:inline-block;">⬅️ Volver al Menú</a>
+
+    <hr>
+    <a href="{% url 'index' %}" class="btn btn-secondary">⬅️ Volver al Menú</a>
+
 </body>
 </html>

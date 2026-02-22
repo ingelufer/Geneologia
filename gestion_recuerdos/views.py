@@ -18,6 +18,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2.credentials import Credentials
 
+from django.shortcuts import render
+from .models import Familiar, RostroDetectado
+
 
 # --- CONFIGURACIÓN ---
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -44,6 +47,16 @@ def google_callback(request):
         'scopes': credentials.scopes
     }
     return redirect('home')
+#-------------------------------------------------------------------------------------------------
+
+def index(request):
+    """Función para renderizar el menú principal del sistema"""
+    return render(request, 'gestion_recuerdos/index.html')
+
+
+
+
+#-------------------------------------------------------------------------------------------------
 
 def configurar_entorno_drive(request):
     try:
@@ -72,7 +85,7 @@ def configurar_entorno_drive(request):
                 removeParents=",".join(foto.get('parents')),
                 fields='id, parents'
             ).execute()
-        return redirect('ver_fotos')
+        return redirect('listar_fotos')
     except Exception as e:
         return HttpResponse(f"Error al organizar: {str(e)}")
 #-------------------------------------------------------------------------------------------------
@@ -249,7 +262,7 @@ def guardar_rostro(request):
                     if not os.path.exists(ruta_final):
                         shutil.move(ruta_temp, ruta_final)
 
-        return HttpResponse("<h2>¡Guardado con éxito!</h2><a href='/ver-fotos/'>Volver</a>")
+        return HttpResponse("<h2>¡Guardado con éxito!</h2><a href='/listar_fotos/'>Volver</a>")
 #-------------------------------------------------------------------------------------------------   
 def galeria_familiar(request):
     rostros = RostroDetectado.objects.all().order_by('familiar')
@@ -278,7 +291,7 @@ def descartar_foto(request, file_id):
             'foto_recorte': 'descarte.jpg' # No necesitamos archivo físico real
         }
     )
-    return redirect('ver_fotos')
+    return redirect('listar_fotos')
 
 #---------------------------------------------------------------------------------------------------------
 
@@ -302,7 +315,7 @@ def eliminar_rostro(request, rostro_id):
     # Borrar registro en BD
     rostro.delete()
     
-    return redirect('galeria')
+    return redirect('ver_galeria')
 #------------------------------------------------------------------------------------
 
 def home(request):
@@ -311,6 +324,19 @@ def home(request):
     """
     return render(request, 'gestion_recuerdos/home.html')
     
+#---------------------------------------------------------------------------------------------------------
+
+def ver_galeria(request):
+    """
+    Función que consulta la base de datos para obtener todos los 
+    familiares y sus respectivos rostros detectados.
+    """
+    # Obtenemos todos los familiares y cargamos sus rostros relacionados
+    familiares = Familiar.objects.prefetch_related('rostros').all()
+    
+    return render(request, 'gestion_recuerdos/galeria.html', {
+        'familiares': familiares
+    })
 
 
 
